@@ -1,0 +1,7 @@
+CREATE TABLE admin_users(id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
+CREATE TABLE admin_sessions(id INTEGER PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, user_id INTEGER NOT NULL REFERENCES admin_users(id) ON DELETE CASCADE, csrf_hash TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE api_keys(id INTEGER PRIMARY KEY, name TEXT NOT NULL, prefix TEXT NOT NULL, key_hash TEXT NOT NULL UNIQUE, allow_all_models INTEGER NOT NULL DEFAULT 1, rpm_limit INTEGER NOT NULL, concurrency_limit INTEGER NOT NULL, expires_at TEXT, revoked_at TEXT, created_at TEXT NOT NULL, last_used_at TEXT);
+CREATE TABLE api_key_models(api_key_id INTEGER NOT NULL REFERENCES api_keys(id) ON DELETE CASCADE, model_id TEXT NOT NULL, PRIMARY KEY(api_key_id,model_id));
+CREATE TABLE request_events(id INTEGER PRIMARY KEY, request_id TEXT NOT NULL, api_key_id INTEGER REFERENCES api_keys(id), endpoint TEXT NOT NULL, model TEXT, status INTEGER NOT NULL, streamed INTEGER NOT NULL, duration_ms INTEGER NOT NULL, usage_json TEXT, error_code TEXT, created_at TEXT NOT NULL);
+CREATE TABLE audit_events(id INTEGER PRIMARY KEY, actor_user_id INTEGER REFERENCES admin_users(id), action TEXT NOT NULL, target_type TEXT NOT NULL, target_id TEXT NOT NULL, metadata_json TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE INDEX request_events_created ON request_events(created_at);
